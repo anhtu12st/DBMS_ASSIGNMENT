@@ -20,6 +20,9 @@
   "license": "ISC",
   "dependencies": {
     "express": "^4.17.1",
+    "knex": "^0.95.6",
+    "lodash": "^4.17.21",
+    "moment": "^2.29.1",
     "mysql2": "^2.2.5"
   },
   "devDependencies": {

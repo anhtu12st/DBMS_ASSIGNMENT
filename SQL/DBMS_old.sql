@@ -1,13 +1,12 @@
-DROP DATABASE IF EXISTS `dbms`;
-CREATE DATABASE `dbms`;
+CREATE DATABASE  IF NOT EXISTS `dbms`;
 USE `dbms`;
 
 /*TABlE 1*/
 CREATE TABLE `Giao_lo` (
-    `ma_giao_lo` CHAR(6), 
-    `longitute` REAL, 
-    `latitude` REAL, 
-    
+	`ma_giao_lo`	CHAR(6),
+    `longitute`		REAL,
+    `latitude`		REAL,
+
     PRIMARY KEY (`ma_giao_lo`)
 );
 
@@ -24,23 +23,23 @@ CREATE TABLE `Doan_duong` (
 
 /*TABLE 3*/
 CREATE TABLE `Con_duong` (
-    `ma_con_duong` CHAR(6), 
-    `ten_duong` VARCHAR(20), 
-    
+	`ma_con_duong`	CHAR(6),
+    `ten_duong`		VARCHAR(20),
+
     PRIMARY KEY (`ma_con_duong`)
 );
 
 /*TABLE 4*/
 CREATE TABLE `Tuyen_tau_xe` (
-    `ma_tuyen` CHAR(4), 
+	`ma_tuyen`		CHAR(4),	-- TODO: B001, T001
     
     PRIMARY KEY (`ma_tuyen`)
 );
 
 /*TABLE 5*/
 CREATE TABLE `Tuyen_xe_bus` (
-    `no` INT UNSIGNED AUTO_INCREMENT, 
-    `ma_tuyen_tau_xe` CHAR(4), 
+	`no`			    INT UNSIGNED AUTO_INCREMENT,
+    `ma_tuyen_tau_xe`	CHAR(4),
     
     PRIMARY KEY (`no`)
 );
@@ -57,11 +56,11 @@ CREATE TABLE `Tuyen_tau_dien` (
 
 /*TABLE 7*/
 CREATE TABLE `Chuyen_tau_xe` (
-    `ma_tuyen` CHAR(4), 
-    `stt`  INT UNSIGNED AUTO_INCREMENT, 
+	`ma_tuyen`			CHAR(4),
+    `stt`				INT UNSIGNED,
     
     PRIMARY KEY (`ma_tuyen`, `stt`)
-) ENGINE=MyISAM;;
+);
 
 /*TABLE 8*/
 CREATE TABLE `Ga_tram` (
@@ -90,7 +89,7 @@ CREATE TABLE `Chuyen_tau_xe_ghe_ga_tram` (
 /*TABLE 10*/
 CREATE TABLE `Ve` (
 	`ma_ve`			CHAR(15),
-    `loai_ve`		SMALLINT,	-- TODO: 0 – vé lẻ, 1– vé tháng, 2 – vé một ngày.
+    `loai_ve`		ENUM('0','1','2'),	-- TODO: 0 – vé lẻ, 1– vé tháng, 2 – vé một ngày.
     `gia_ve`		REAL,
     `ngay_gio_mua`	DATETIME,	-- TODO: format DD-MM-YYYY HH:MI:SS.
     `ma_hanh_khach`	CHAR(8),
@@ -200,9 +199,12 @@ CREATE TABLE `Ga_tram_lam_viec` (
 
 /*TABLE 20*/
 CREATE  TABLE `Bang_gia` (
-    `don_gia_xe_bus`            INT NOT NULL,
-    `gia_ve_1_ngay_trong_tuan`  INT NOT NULL,
-    `gia_ve_1_ngay_cuoi_tuan`   INT NOT NULL
+    `don_gia_xe_bus`            INT UNSIGNED NOT NULL,
+    `gia_ve_1_ngay_trong_tuan`  INT UNSIGNED NOT NULL,
+    `gia_ve_1_ngay_cuoi_tuan`   INT UNSIGNED NOT NULL,
+    `integrity_keeper`          ENUM('') NOT NULL,
+
+    PRIMARY KEY (`integrity_keeper`)
 );
 
 /**
@@ -285,7 +287,10 @@ ADD CONSTRAINT `fk_gatramlv_mnv_nhanvien_mnv` FOREIGN KEY (`ma_nhan_vien`) REFER
 **/
 
 /*TABLE 1*/
-CREATE TABLE `Giao_lo_seq`(`id` INT NOT NULL AUTO_INCREMENT PRIMARY KEY);
+CREATE TABLE `Giao_lo_seq`
+(
+  `id` INT NOT NULL AUTO_INCREMENT PRIMARY KEY
+);
 DELIMITER $$
 CREATE TRIGGER `tg_giao_lo_before_insert` BEFORE INSERT ON `Giao_lo`
 FOR EACH ROW
@@ -293,10 +298,18 @@ BEGIN
   INSERT INTO `Giao_lo_seq` VALUES (NULL);
   SET NEW.`ma_giao_lo` = CONCAT('GL', LAST_INSERT_ID());
 END$$
+-- CREATE TRIGGER `tg_giao_lo_before_delete` BEFORE DELETE ON `Giao_lo`
+-- FOR EACH ROW
+-- BEGIN
+--   DELETE FROM `` WHERE `id`=SUBSTR(NEW.`ma_giao_lo`, 2)
+-- END$$
 DELIMITER ;
 
 /*TABLE 3*/
-CREATE TABLE `Con_duong_seq`(`id` INT NOT NULL AUTO_INCREMENT PRIMARY KEY);
+CREATE TABLE `Con_duong_seq`
+(
+  `id` INT NOT NULL AUTO_INCREMENT PRIMARY KEY
+);
 DELIMITER $$
 CREATE TRIGGER `tg_con_duong_before_insert` BEFORE INSERT ON `Con_duong`
 FOR EACH ROW
@@ -430,6 +443,27 @@ END;
 $$
 DELIMITER ;
 
+/*TABLE 13*/
+/*
+*   2.1.1
+*/
+DELIMITER $$
+CREATE TRIGGER `tg_hoat_dong_ve_thang_before_insert` BEFORE INSERT ON `Hoat_dong_ve_thang`
+FOR EACH ROW
+BEGIN
+    DECLARE `tram_1` CHAR(7);
+    DECLARE `tram_2` CHAR(7);
+    -- SELECT `tram_1` = `ma_ga_tram_1`, `tram_2` = `ma_ga_tram_2` FROM `Ve_thang` AS `V` WHERE   `V`.`ma_ve` = NEW.`ma_ve`;
+    SET `tram_1` = (SELECT `ma_ga_tram_1` FROM `Ve_thang` AS `V` WHERE `V`.`ma_ve` = NEW.`ma_ve`);
+    SET `tram_2` = (SELECT `ma_ga_tram_2` FROM `Ve_thang` AS `V` WHERE `V`.`ma_ve` = NEW.`ma_ve`);
+    IF ((`tram_1` = NEW.`ga_tram_len` AND `tram_2` = NEW.`ga_tram_len`) OR
+        (`tram_2` = NEW.`ga_tram_len` AND `tram_1` = NEW.`ga_tram_len`)) THEN 
+        SIGNAL SQLSTATE '45000';
+    END IF;
+END;
+$$
+DELIMITER ;
+
 /*TABLE 14*/
 DELIMITER $$
 CREATE TRIGGER `tg_ve_1_ngay_before_insert` BEFORE INSERT ON `Ve_1_ngay`
@@ -503,194 +537,6 @@ END;
 $$
 DELIMITER ;
 
-/*
-** PHAN 2
-*/
-
-/*
-** 2.1.1
-*/
-
-DELIMITER $$
-CREATE TRIGGER `check_tram_len_xuong_Hoat_dong_ve_thang_Ve_thang` BEFORE INSERT ON `Hoat_dong_ve_thang`
-FOR EACH ROW
-BEGIN
-	DECLARE `tram_1` CHAR(7);
-    DECLARE `tram_2` CHAR(7);
-    SET `tram_1` = (SELECT `ma_ga_tram_1` FROM `Ve_thang` `V` WHERE `V`.`ma_ve` = New.`ma_ve`);
-    SET `tram_2` = (SELECT `ma_ga_tram_2` FROM `Ve_thang` `V` WHERE `V`.`ma_ve` = New.`ma_ve`);
-	IF ((`tram_1` = New.`ga_tram_len` AND `tram_2` = New.`ga_tram_xuong`) OR
-		 (`tram_2` = New.`ga_tram_len` AND `tram_1` = New.`ga_tram_xuong`)) != 1 THEN
-		SIGNAL SQLSTATE '45000';
-    END IF;
-END;
-$$
-DELIMITER ;
-
-/*
-** 2.1.2
-*/
-
-DROP TRIGGER IF EXISTS auto_update_price1;
-DELIMITER $$
-CREATE TRIGGER auto_update_price1 AFTER INSERT ON Ve_le
-FOR EACH ROW
-BEGIN
-	DECLARE gia INT UNSIGNED;
-    DECLARE stt1 INT UNSIGNED;
-    DECLARE stt2 INT UNSIGNED;
-    IF (SUBSTRING(New.ma_tuyen, 1, 1) = 'T') THEN 
-		BEGIN
-			SET gia = (SELECT don_gia FROM Tuyen_tau_dien WHERE ma_tuyen_tau_xe=New.ma_tuyen);
-			SET stt1 = (SELECT stt FROM Chuyen_tau_xe_ghe_ga_tram WHERE ma_tuyen=New.ma_tuyen AND ma_ga_tram=New.ma_ga_tram_len );
-			SET stt2 = (SELECT stt FROM Chuyen_tau_xe_ghe_ga_tram WHERE ma_tuyen=New.ma_tuyen AND ma_ga_tram=New.ma_ga_tram_xuong );
-			UPDATE Ve SET gia_ve = ROUND((gia*(stt2-stt1+1)/2)) where ma_ve=New.ma_ve;
-        END;
-	ELSE 
-		BEGIN
-			SET gia = (SELECT don_gia_xe_bus FROM Bang_gia );
-			SET stt1 = (SELECT stt FROM Chuyen_tau_xe_ghe_ga_tram WHERE ma_tuyen=New.ma_tuyen AND ma_ga_tram=New.ma_ga_tram_len );
-			SET stt2 = (SELECT stt FROM Chuyen_tau_xe_ghe_ga_tram WHERE ma_tuyen=New.ma_tuyen AND ma_ga_tram=New.ma_ga_tram_xuong );
-			UPDATE Ve SET gia_ve = ROUND((gia*(stt2-stt1+1)/2)) where ma_ve=New.ma_ve;
-        END;
-	END IF;
-END;
-$$
-DELIMITER ;
-DROP TRIGGER IF EXISTS auto_update_price2;
-DELIMITER $$
-CREATE TRIGGER auto_update_price2 AFTER INSERT ON Ve_thang
-FOR EACH ROW
-BEGIN
-	DECLARE gia INT UNSIGNED;
-    DECLARE stt1 INT UNSIGNED;
-    DECLARE stt2 INT UNSIGNED;
-    IF (SUBSTRING(New.ma_tuyen, 1, 1) = 'T') THEN 
-		BEGIN
-			SET gia = (SELECT don_gia FROM Tuyen_tau_dien WHERE ma_tuyen_tau_xe=New.ma_tuyen);
-			SET stt1 = (SELECT stt FROM Chuyen_tau_xe_ghe_ga_tram WHERE ma_tuyen=New.ma_tuyen AND ma_ga_tram=New.ma_ga_tram_1 );
-			SET stt2 = (SELECT stt FROM Chuyen_tau_xe_ghe_ga_tram WHERE ma_tuyen=New.ma_tuyen AND ma_ga_tram=New.ma_ga_tram_2 );
-			UPDATE Ve SET gia_ve = ROUND((gia*(stt2-stt1+1)/2)*20*2) where ma_ve=New.ma_ve;
-        END;
-	ELSEIF (SUBSTRING(New.ma_tuyen, 1, 1) = 'B') THEN 
-		BEGIN
-			SET gia = (SELECT don_gia_xe_bus FROM Bang_gia );
-			SET stt1 = (SELECT stt FROM Chuyen_tau_xe_ghe_ga_tram WHERE ma_tuyen=New.ma_tuyen AND ma_ga_tram=New.ma_ga_tram_1 );
-			SET stt2 = (SELECT stt FROM Chuyen_tau_xe_ghe_ga_tram WHERE ma_tuyen=New.ma_tuyen AND ma_ga_tram=New.ma_ga_tram_2 );
-			UPDATE Ve SET gia_ve = ROUND((gia*(stt2-stt1+1)/2)*20*2) where ma_ve=New.ma_ve;
-        END;
-	END IF;
-END;
-$$
-DELIMITER ;
-DROP TRIGGER IF EXISTS auto_update_price3;
-DELIMITER $$
-CREATE TRIGGER auto_update_price3 AFTER INSERT ON Ve_1_ngay
-FOR EACH ROW
-BEGIN
-	DECLARE gia INT UNSIGNED;
-    DECLARE ngay INT UNSIGNED;
-	SET ngay= DAYOFWEEK(New.ngay_su_dung);
-    IF (ngay=1) THEN
-		SET gia = (SELECT gia_ve_1_ngay_cuoi_tuan FROM Bang_gia );
-	ELSE
-		SET gia = (SELECT gia_ve_1_ngay_trong_tuan FROM Bang_gia );
-	END IF;
-	UPDATE Ve SET gia_ve = gia where ma_ve=New.ma_ve;
-END;
-$$
-DELIMITER ;
-
-/*
-** 2.2.1
-*/
-
-DELIMITER $$
-CREATE PROCEDURE LoTrinhTuyenXeTau (IN `ma_tuyen` CHAR(4))
-BEGIN
-	DECLARE `i` INT;
-    DECLARE `str` VARCHAR(1000);
-    DECLARE `ma_ga_tram_i` CHAR(7);
-    DECLARE `ten_ga_tram_i` VARCHAR(30);
-    DECLARE `max_i` INT;
-    
-	CREATE TABLE `temp`
-    SELECT `stt`, `ma_ga_tram` FROM `Chuyen_tau_xe_ghe_ga_tram` `T`
-    WHERE `T`.`ma_tuyen` = `ma_tuyen`
-    ORDER BY `stt`;
-    
-    SET `i` = 1;
-    SET `str` = "";
-    SET `max_i` = (SELECT COUNT(`stt`) FROM `temp`);
-    
-    loop_label:  LOOP
-		IF  `i` > `max_i` THEN 
-			LEAVE  loop_label;
-		END IF;
-		IF `i` != 1 THEN
-			SET  `str` = CONCAT(`str`,', ');
-		END  IF;
-        SET `ma_ga_tram_i` = (SELECT `ma_ga_tram` FROM `temp` WHERE `stt` = `i`);
-        SET `ten_ga_tram_i` = (SELECT `ten` FROM `Ga_tram` WHERE `ma_ga_tram` = `ma_ga_tram_i`);
-		SET  `str` = CONCAT(`str`,`ten_ga_tram_i`);
-		SET i = i + 1;
-	END LOOP;
-    DROP TABLE `temp`;
-    SELECT `str`;
-END;
-$$
-DELIMITER ;
-
-/*
-** 2.2.2
-*/
-DELIMITER $$
-CREATE PROCEDURE `ThongKeLuotNguoi` (`ma_tuyen` CHAR(4), `tu_ngay` DATE, `toi_ngay` DATE)
-BEGIN
-    DECLARE `cur_date` DATE;
-    CREATE TABLE `temp` (`ngay_su_dung` DATE PRIMARY KEY, `tong_luot` INT);
-    SET `cur_date` = `tu_ngay`;
-    WHILE `cur_date` <= `toi_ngay` DO
-        INSERT INTO `temp` VALUE (`cur_date`, 0);
-        SET `cur_date` = DATE_ADD(`cur_date`,INTERVAL 1 day);
-    END WHILE;
-
-    INSERT INTO `temp`
-    SELECT * 
-    FROM (
-        SELECT `ngay_su_dung`, count(`ma_ve`) AS `tong_luot`
-        FROM (
-            SELECT `v1`.`ma_ve`, `v1`.`ngay_su_dung` 
-            FROM `Ve_1_ngay` AS `v1` 
-            JOIN `Hoat_dong_cua_ve_1_ngay` AS `v2` 
-            ON `v1`.`ma_ve` = `v2`.`ma_ve` 
-            WHERE `v2`.`ma_tuyen` = `ma_tuyen` AND `ngay_su_dung` BETWEEN `tu_ngay` AND `toi_ngay`
-            UNION ALL
-            SELECT `ma_ve`, `ngay_su_dung`
-            FROM `Ve_le` AS `vl`
-            WHERE `vl`.`ma_tuyen` = `ma_tuyen` AND  `ngay_su_dung` BETWEEN `tu_ngay` AND `toi_ngay`
-            UNION ALL
-            SELECT `v3`.`ma_ve`, `v4`.`ngay_su_dung` 
-            FROM `Ve_thang` AS `v3` 
-            JOIN `Hoat_dong_ve_thang` AS `v4` 
-            ON `v3`.`ma_ve` = `v4`.`ma_ve` 
-            WHERE `v3`.`ma_tuyen` = `ma_tuyen` AND `v4`.`ngay_su_dung` BETWEEN `tu_ngay` AND `toi_ngay`
-        ) AS `a`
-        GROUP BY `ngay_su_dung`
-    ) as `b`
-    ON DUPLICATE KEY UPDATE `temp`.`tong_luot`=`b`.`tong_luot`;
-
-    SELECT * FROM `temp`;
-    DROP TABLE `temp`;
-END;
-$$
-DELIMITER ;
-
-
-/*
--- 2 cach giai quyet van de voi trigger can thong nhat lai chi dung 1 cach
--- truong hop stt cua chuyen_tau_xe_ghe_tram_ga 1-2-3 cua 1 chuyen se ra sao neu tau chay nguoc lai 3-2-1 tren tuyen do
-*/
 
 /**
 ***		INSERT DATA
@@ -708,145 +554,111 @@ INSERT INTO `Giao_lo` (`longitute`, `latitude`) VALUES (0,0),(2,2),(2,0),(3,3),(
 INSERT INTO `Con_duong` (`ten_duong`) VALUES ('Duong doi'), ('Duong vao tim em'), ('Duong di hoc'), ('Duong ve nha');
 
 /*TABLE 2*/
-INSERT INTO `Doan_duong` 
-VALUES  ('GL1', 'GL2', 'CD1', 10, 1), 
-        ('GL2', 'GL4', 'CD1', 10, 2);
-
-INSERT INTO `Doan_duong` 
-VALUES ('GL1', 'GL8', 'CD2', 1000, 1);
-
-INSERT INTO `Doan_duong` 
-VALUES  ('GL1', 'GL3', 'CD3', 100, 1), 
-        ('GL3', 'GL5', 'CD3', 100, 2), 
-        ('GL5', 'GL7', 'CD3', 100, 3);
-
-INSERT INTO `Doan_duong` 
-VALUES  ('GL7', 'GL2', 'CD4', 5, 1), 
-        ('GL2', 'GL1', 'CD4', 5, 2);
+INSERT INTO `Doan_duong` VALUES ('GL1', 'GL2', 'CD1', 10, 1), ('GL2', 'GL4', 'CD1', 10, 2);
+INSERT INTO `Doan_duong` VALUES ('GL1', 'GL8', 'CD2', 1000, 1);
+INSERT INTO `Doan_duong` VALUES ('GL1', 'GL3', 'CD3', 100, 1), ('GL3', 'GL5', 'CD3', 100, 2), ('GL5', 'GL7', 'CD3', 100, 3);
+INSERT INTO `Doan_duong` VALUES ('GL7', 'GL2', 'CD1', 5, 1), ('GL2', 'GL1', 'CD1', 5, 2);
 
 /*TABLE 4*/
-INSERT INTO `Tuyen_tau_xe` VALUES ('B001'),('B002'),('B003'),('B004'),('T001'),('T002'),('T003'),('T004');
+INSERT INTO `Tuyen_tau_xe` VALUES ('B001'),('B002'),('B003'),('T001'),('T002'),('T003');
 
 /*TABLE 5*/
-INSERT INTO `Tuyen_xe_bus` (`ma_tuyen_tau_xe`) VALUES ('B001'),('B002'),('B003'),('B004');
+INSERT INTO `Tuyen_xe_bus` (`ma_tuyen_tau_xe`) VALUES ('B001'),('B002'),('B003');
 
 /*TABLE 6*/
-INSERT INTO `Tuyen_tau_dien` 
-VALUES  ('A', 'Tau A', 10000, 'T001'), 
-        ('B', 'Tau B', 15000, 'T002'), 
-        ('C', 'Tau C', 20000, 'T003'),
-        ('D', 'Tau D', 25000, 'T004');
+INSERT INTO `Tuyen_tau_dien` VALUES ('A', 'Tau A', 10, 'T001'), ('B', 'Tau B', 15, 'T002'), ('C', 'Tau C', 20, 'T003');
 
 /*TABLE 7*/
-INSERT INTO `Chuyen_tau_xe` 
-VALUES  ('B001', 1), ('B001', 2), 
-        ('B002', 1), ('B002', 2), 
-        ('B003', 1), ('B003', 2),                            
-        ('B004', 1), ('B004', 2),                            
-        ('T001', 1), ('T001', 2), 
-        ('T002', 1), ('T002', 2), 
-        ('T003', 1), ('T003', 2),
-        ('T004', 1), ('T004', 2);
+INSERT INTO `Chuyen_tau_xe` VALUES  ('B001', 1), ('B001', 2), ('B002', 1), ('B002', 2), ('B003', 1), ('B003', 2),
+                                    ('T001', 1), ('T001', 2), ('T002', 1), ('T002', 2), ('T003', 1), ('T003', 2);
 
 /*TABLE 8*/
-INSERT INTO `Ga_tram` 
-VALUES  ('BT00001', 'Dia chi 1', 'Tram BT 1', 0, 'GL1', 'GL2'), 
-        ('BT00002', 'Dia chi 2', 'Tram BT 2', 0, 'GL2', 'GL4'),
-        ('TT00001', 'Dia chi 3', 'Tram TT 1', 1, 'GL1', 'GL3'), 
-        ('TT00002', 'Dia chi 4', 'Tram TT 2', 1, 'GL3', 'GL5');
+INSERT INTO `Ga_tram` VALUES ('BT00001', 'Dia chi 1', 'Tram BT 1', 0, 'GL1', 'GL2'), ('BT00002', 'Dia chi 2', 'Tram BT 2', 0, 'GL2', 'GL4'),
+                             ('TT00001', 'Dia chi 3', 'Tram TT 1', 1, 'GL1', 'GL3'), ('TT00002', 'Dia chi 4', 'Tram TT 2', 1, 'GL3', 'GL5');
 
 /*TABLE 9*/
-INSERT INTO `Chuyen_tau_xe_ghe_ga_tram` 
-VALUES  ('B001', 1, 'BT00001', 1, '10:10:00', '10:20:00'),
-        ('B001', 1, 'BT00002', 2, '10:30:00', '10:40:00'),
-        ('T001', 1, 'TT00001', 1, '10:10:00', '10:20:00'),
-        ('T001', 1, 'TT00002', 2, '10:30:00', '10:40:00');
+INSERT INTO `Chuyen_tau_xe_ghe_ga_tram` VALUES  ('B001', 1, 'BT00001', 1, '10:10:00', '10:20:00'),
+                                                ('B001', 1, 'BT00002', 2, '10:30:00', '10:40:00'),
+                                                ('T001', 1, 'TT00001', 1, '10:10:00', '10:20:00'),
+                                                ('T001', 1, 'TT00002', 2, '10:30:00', '10:40:00');
 
 /*TABLE 16*/
-INSERT INTO `Hanh_khach` 
-VALUES  ('KH000001', '111111111', '1231231231', 'teacher', 'F', 'teacher1@gmail.com', '1990-01-01'),
-        ('KH000002', '222222222', '0123123123', 'hihi', 'M', 'hihi2@gmail.com', '1992-02-02'),
-        ('KH000003', '333333333', '0123112123', 'hiihi', 'F', 'hiihi2@gmail.com', '1992-02-02'),
-        ('KH000004', '444444444', '0122123123', 'hiiihi', 'M', 'hiiiihi2@gmail.com', '1992-02-02');
+INSERT INTO `Hanh_khach` VALUES ('KH000001', '111111111', '1231231231', 'teacher', 'F', 'teacher1@gmail.com', '1990-01-01'),
+                                ('KH000002', '222222222', '0123123123', 'hihi', 'M', 'hihi2@gmail.com', '1992-02-02');
 
 /*TABLE 10*/
-INSERT INTO `Ve` 
-VALUES  ('VO1805202100001', 0, 0, '2021-05-18 10:00:00', 'KH000001'),
-        ('VO1805202100002', 0, 0, '2021-05-18 10:00:00', 'KH000002'),
-        ('VO2005202100001', 0, 0, '2021-05-20 10:00:00', 'KH000003'),
-        ('VO2005202100002', 0, 0, '2021-05-20 10:00:00', 'KH000004'),
-
-        ('VM1805202100001', 1, 0, '2021-05-18 10:00:00', 'KH000001'),
-        ('VM1805202100002', 1, 0, '2021-05-18 10:00:00', 'KH000002'),
-        ('VM2005202100001', 1, 0, '2021-05-20 10:00:00', 'KH000003'),
-        ('VM2005202100002', 1, 0, '2021-05-20 10:00:00', 'KH000004'),
-
-        ('VD1805202100001', 2, 0, '2021-05-18 10:00:00', 'KH000001'),
-        ('VD1805202100002', 2, 0, '2021-05-18 10:00:00', 'KH000002'),
-        ('VD2005202100001', 2, 0, '2021-05-20 10:00:00', 'KH000003'),
-        ('VD2005202100002', 2, 0, '2021-05-20 10:00:00', 'KH000004');
+INSERT INTO `Ve` VALUES ('VO1805202100001', '0', 10, '2021-05-18 10:00:00', 'KH000001'),
+                        ('VO1805202100002', '0', 10, '2021-05-18 10:00:00', 'KH000002'),
+                        ('VM1805202100001', '1', 250, '2021-05-18 10:00:00', 'KH000001'),
+                        ('VM1805202100002', '1', 250, '2021-05-18 10:00:00', 'KH000002'),
+                        ('VD1805202100001', '2', 30, '2021-05-18 10:00:00', 'KH000001'),
+                        ('VD1805202100002', '2', 30, '2021-05-18 10:00:00', 'KH000002');
 
 /*TABLE 11*/
-INSERT INTO `Ve_le` 
-VALUES  ('VO1805202100001', 'B001', '2021-05-18', 'BT00001', 'BT00002', '10:10:00', '10:30:00'),
-        ('VO1805202100002', 'T001', '2021-05-18', 'TT00001', 'TT00002', '10:10:00', '10:30:00'),
-        ('VO2005202100001', 'B001', '2021-05-20', 'BT00001', 'BT00002', '10:10:00', '10:30:00'),
-        ('VO2005202100002', 'T001', '2021-05-20', 'TT00001', 'TT00002', '10:10:00', '10:30:00');
+INSERT INTO `Ve_le` VALUES  ('VO1805202100001', 'B001', '2021-05-18', 'BT00001', 'BT00002', '10:10:00', '10:30:00'),
+                            ('VO1805202100002', 'T001', '2021-05-18', 'TT00001', 'TT00002', '10:10:00', '10:30:00');
                 
 /*TABLE 12*/
-INSERT INTO `Ve_thang` 
-VALUES  ('VM1805202100001', 'B001', 'BT00001', 'BT00002'),
-        ('VM1805202100002', 'T001', 'TT00001', 'TT00002'),
-        ('VM2005202100001', 'B001', 'BT00001', 'BT00002'),
-        ('VM2005202100002', 'T001', 'TT00001', 'TT00002');
+INSERT INTO `Ve_thang` VALUES   ('VM1805202100001', 'B001', 'BT00001', 'BT00002'),
+                                ('VM1805202100002', 'T001', 'TT00001', 'TT00002');
 
 /*TABLE 13*/
-INSERT INTO `Hoat_dong_ve_thang` 
-VALUES  ('VM1805202100001', '2021-05-18', '10:10:00', '10:30:00', 'BT00001', 'BT00002'),
-        ('VM1805202100002', '2021-05-18', '10:10:00', '10:30:00', 'TT00001', 'TT00002'),
-        ('VM2005202100001', '2021-05-20', '10:10:00', '10:30:00', 'BT00002', 'BT00001'),
-        ('VM2005202100002', '2021-05-20', '10:10:00', '10:30:00', 'TT00002', 'TT00001');
+INSERT INTO `Hoat_dong_ve_thang` VALUES ('VM1805202100001', '2021-05-18', '10:10:00', '10:30:00', 'BT00001', 'BT00002'),
+                                        ('VM1805202100002', '2021-05-18', '10:10:00', '10:30:00', 'TT00001', 'TT00002');
 
 /*TABLE 14*/
-INSERT INTO `Ve_1_ngay` 
-VALUES  ('VD1805202100001', '2021-05-18'),
-        ('VD1805202100002', '2021-05-18'),
-        ('VD2005202100001', '2021-05-20'),
-        ('VD2005202100002', '2021-05-20');
+INSERT INTO `Ve_1_ngay` VALUES   ('VD1805202100001', '2021-05-18'),
+                                ('VD1805202100002', '2021-05-18');
 
 /*TABLE 15*/
 INSERT INTO `Hoat_dong_cua_ve_1_ngay` (`ma_ve`, `ma_tuyen`, `ma_ga_tram_len`, `ma_ga_tram_xuong`, `gio_len`, `gio_xuong`) 
 VALUES  ('VD1805202100001', 'B001', 'BT00001', 'BT00002', '10:10:00', '10:30:00'),
         ('VD1805202100001', 'B001', 'BT00002', 'BT00001', '10:30:00', '10:50:00'),
         ('VD1805202100002', 'T001', 'TT00001', 'TT00002', '10:10:00', '10:30:00'),
-        ('VD1805202100002', 'T001', 'TT00002', 'TT00001', '10:30:00', '10:50:00'),
-
-        ('VD2005202100001', 'B001', 'BT00001', 'BT00002', '10:10:00', '10:30:00'),
-        ('VD2005202100001', 'B001', 'BT00002', 'BT00001', '10:30:00', '10:50:00'),
-        ('VD2005202100002', 'T001', 'TT00001', 'TT00002', '10:10:00', '10:30:00'),
-        ('VD2005202100002', 'T001', 'TT00002', 'TT00001', '10:30:00', '10:50:00');
-
-/*TABLE 18*/
-INSERT INTO `Nhan_vien` 
-VALUES  ('NV0001', 'Giam sat', '1993-03-03', 'nv1@gmail.com', 'F', '0123412341', '0123412342'),
-        ('NV0002', 'Giam sat', '1993-04-04', 'nv2@gmail.com', 'M', '0123412343', '0223412344'),
-        ('NV0003', 'Giam sat', '1993-04-04', 'nv2@gmail.com', 'F', '0123112343', '0123412344'),
-        ('NV0004', 'Giam sat', '1993-04-04', 'nv2@gmail.com', 'M', '0123412243', '0133412344');
+        ('VD1805202100002', 'T001', 'TT00002', 'TT00001', '10:30:00', '10:50:00');
 
 /*TABLE 17*/
-INSERT INTO `The_tu` 
-VALUES  ('TT000001', '2021-05-18', 'KH000001'),
-        ('TT000002', '2021-05-18', 'KH000002'),
-        ('TT000003', '2021-05-20', 'KH000002'),
-        ('TT000004', '2021-05-20', 'KH000002');
+INSERT INTO `The_tu` VALUES ('TT000001', '2021-05-18', 'KH000001'),
+                            ('TT000002', '2021-05-18', 'KH000002');
+
+/*TABLE 18*/
+INSERT INTO `Nhan_vien` VALUES ('NV0001', 'Giam sat', '1993-03-03', 'nv1@gmail.com', 'F', '0123412341', '0123412342'),
+                                ('NV0002', 'Giam sat', '1993-04-04', 'nv2@gmail.com', 'M', '0123412343', '0123412344');
 
 /*TABLE 19*/
-INSERT INTO `Ga_tram_lam_viec` 
-VALUES  ('NV0001', 'BT00001'),
-        ('NV0002', 'TT00001'),
-        ('NV0003', 'BT00002'),
-        ('NV0004', 'TT00002');
+INSERT INTO `Ga_tram_lam_viec` VALUES   ('NV0001', 'BT00001'),
+                                        ('NV0002', 'TT00001');
 
+/*
+*   2.2.2
+*/
+DELIMITER $$
+CREATE PROCEDURE `ThongKeLuotNguoi` (`ma_tuyen` VARCHAR(4), `tu_ngay` DATE, `toi_ngay` DATE)
+BEGIN
 
+END; 
+$$
+DELIMITER ;
 
-
+select count(a.ma_ve), a.ngay_su_dung
+from (
+    select v1.ma_ve, v1.ngay_su_dung 
+    from Ve_1_ngay as v1 
+    join Hoat_dong_cua_ve_1_ngay as v2 
+    on v1.ma_ve = v2.ma_ve 
+    where v2.ma_tuyen = @ma_tuyen and ngay_su_dung between @date1 and @date2
+    union all
+    select ma_ve, ngay_su_dung
+    from Ve_le
+    where ma_tuyen = @ma_tuyen and  ngay_su_dung between @date1 and @date2
+    union all
+    select v1.ma_ve, v2.ngay_su_dung 
+    from Ve_thang as v1 
+    join Hoat_dong_ve_thang as v2 
+    on v1.ma_ve = v2.ma_ve 
+    where v1.ma_tuyen = @ma_tuyen and v2.ngay_su_dung between @date1 and @date2
+) as a
+group by a.ngay_su_sung;
+/*
+-- 2 cach giai quyet van de voi trigger can thong nhat lai chi dung 1 cach
+*/

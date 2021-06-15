@@ -12,7 +12,7 @@ const port = process.env.PORT || 5000;
 app.use(express.json({ limit: "1MB" }));
 
 // define a root route
-app.use("/api/v1", routes);
+app.use("/", routes);
 
 // listen for requests
 app.listen(port, () => {
