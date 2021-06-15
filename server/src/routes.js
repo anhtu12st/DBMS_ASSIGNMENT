@@ -13,6 +13,18 @@ router.get("/", (req, res) => {
   res.send("Server is running!!!");
 });
 
+router.get('/login', async (req, res) => {
+  try {
+    const username = 'anhtu';
+    const password = '2001stKh!';
+    const data = await knex.raw('');
+    return res.json(data);
+  } catch (error) {
+    console.error(error);
+    res.sendStatus(500);
+  }
+});
+
 router.get("/hanh-khach", async (req, res) => {
   try {
     const all = await HanhKhachModel.findAll();
@@ -73,7 +85,7 @@ router.get("/tuyen-tau-dien", async (req, res) => {
     res.sendStatus(500);
   }
 });
-router.get("/add-tuyen-tau-dien", async (req, res) => {
+router.post("/tuyen-tau-dien", async (req, res) => {
   try {
     const { ma_tuyen_tau, ten_tuyen_tau, ma_tuyen_tau_xe } = req.body;
     const data = await TuyenTauDienModel.addTuyenTauDien({
@@ -107,7 +119,7 @@ router.get("/chuyen-tau-xe", async (req, res) => {
     res.sendStatus(500);
   }
 });
-router.get("/add-chuyen-tau-xe", async (req, res) => {
+router.post("/chuyen-tau-xe", async (req, res) => {
   try {
     const {
       ma_tuyen = "B002",
