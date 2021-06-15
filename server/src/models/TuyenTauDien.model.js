@@ -18,12 +18,14 @@ const TuyenTauDien = (knex) => {
   const addTuyenTauDien = async ({
     ma_tuyen_tau,
     ten_tuyen_tau,
+    don_gia,
     ma_tuyen_tau_xe,
   }) => {
     await TuyenTauXeModel.create({ ma_tuyen: ma_tuyen_tau_xe });
     return model.create({
       ma_tuyen_tau,
       ten_tuyen_tau,
+      don_gia,
       ma_tuyen_tau_xe,
     });
   };

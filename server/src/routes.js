@@ -87,10 +87,11 @@ router.get("/tuyen-tau-dien", async (req, res) => {
 });
 router.post("/tuyen-tau-dien", async (req, res) => {
   try {
-    const { ma_tuyen_tau, ten_tuyen_tau, ma_tuyen_tau_xe } = req.body;
+    const { ma_tuyen_tau, ten_tuyen_tau, don_gia, ma_tuyen_tau_xe } = req.body;
     const data = await TuyenTauDienModel.addTuyenTauDien({
       ma_tuyen_tau,
       ten_tuyen_tau,
+      don_gia,
       ma_tuyen_tau_xe,
     });
     res.json(data);
@@ -100,7 +101,7 @@ router.post("/tuyen-tau-dien", async (req, res) => {
   }
 });
 
-router.get("/ga-tram", async (req, res) => {
+router.post("/ga-tram", async (req, res) => {
   try {
     const data = await GaTramModel.findAll();
     res.json(data);
@@ -122,12 +123,12 @@ router.get("/chuyen-tau-xe", async (req, res) => {
 router.post("/chuyen-tau-xe", async (req, res) => {
   try {
     const {
-      ma_tuyen = "B002",
-      stt = 3,
-      ma_ga_tram = "BT00002",
-      stt_ga_tram = 1,
-      gio_ghe = "10:10:00",
-      gio_di = "10:30:00",
+      ma_tuyen,
+      stt,
+      ma_ga_tram,
+      stt_ga_tram,
+      gio_ghe,
+      gio_di,
     } = req.body;
     const data = await ChuyenTauXeModel.addChuyenTauXe({
       ma_tuyen,
