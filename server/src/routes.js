@@ -101,7 +101,7 @@ router.post("/tuyen-tau-dien", async (req, res) => {
   }
 });
 
-router.post("/ga-tram", async (req, res) => {
+router.get("/ga-tram", async (req, res) => {
   try {
     const data = await GaTramModel.findAll();
     res.json(data);
