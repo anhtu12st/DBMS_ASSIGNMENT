@@ -4,7 +4,7 @@ USE `dbms`;
 
 /*TABlE 1*/
 CREATE TABLE `Giao_lo` (
-    `ma_giao_lo` CHAR(6), 
+    `ma_giao_lo` CHAR(6), -- GL[x], x AUTO_INCREMENT
     `longitute` REAL, 
     `latitude` REAL, 
     
@@ -13,9 +13,9 @@ CREATE TABLE `Giao_lo` (
 
 /*TABLE 2*/
 CREATE TABLE `Doan_duong` (
-	`ma_giao_lo_1`	CHAR(6),
-    `ma_giao_lo_2`	CHAR(6),
-    `ma_con_duong`	CHAR(6),
+	`ma_giao_lo_1`	CHAR(6), -- FK to ma_giao_lo (Giao_lo)
+    `ma_giao_lo_2`	CHAR(6), -- FK to ma_giao_lo (Giao_lo)
+    `ma_con_duong`	CHAR(6), -- FK to ma_con_duong (Con_duong)
     `chieu_dai`		INT UNSIGNED,
     `stt`			SMALLINT UNSIGNED,
 
@@ -24,7 +24,7 @@ CREATE TABLE `Doan_duong` (
 
 /*TABLE 3*/
 CREATE TABLE `Con_duong` (
-    `ma_con_duong` CHAR(6), 
+    `ma_con_duong` CHAR(6), -- CD[x], x AUTO_INCREMENT
     `ten_duong` VARCHAR(20), 
     
     PRIMARY KEY (`ma_con_duong`)
@@ -32,7 +32,7 @@ CREATE TABLE `Con_duong` (
 
 /*TABLE 4*/
 CREATE TABLE `Tuyen_tau_xe` (
-    `ma_tuyen` CHAR(4), 
+    `ma_tuyen` CHAR(4), -- [B|T] [0-9][0-9][0-9]
     
     PRIMARY KEY (`ma_tuyen`)
 );
@@ -40,123 +40,123 @@ CREATE TABLE `Tuyen_tau_xe` (
 /*TABLE 5*/
 CREATE TABLE `Tuyen_xe_bus` (
     `no` INT UNSIGNED AUTO_INCREMENT, 
-    `ma_tuyen_tau_xe` CHAR(4), 
+    `ma_tuyen_tau_xe` CHAR(4), -- FK to ma_tuyen (Tuyen_tau_xe) 'B'
     
     PRIMARY KEY (`no`)
 );
 
 /*TABLE 6*/
 CREATE TABLE `Tuyen_tau_dien` (
-	`ma_tuyen_tau`		CHAR,
+	`ma_tuyen_tau`		CHAR, -- A, B, C
     `ten_tuyen_tau`		VARCHAR(20)		NOT NULL	UNIQUE,
     `don_gia`			INT UNSIGNED,
-    `ma_tuyen_tau_xe`	CHAR(4),
+    `ma_tuyen_tau_xe`	CHAR(4), -- FK to ma_tuyen (Tuyen_tau_xe) 'T'
     
     PRIMARY KEY (`ma_tuyen_tau`)
 );
 
 /*TABLE 7*/
 CREATE TABLE `Chuyen_tau_xe` (
-    `ma_tuyen` CHAR(4), 
+    `ma_tuyen` CHAR(4), -- FK to ma_tuyen (Tuyen_tau_xe)
     `stt`  INT UNSIGNED AUTO_INCREMENT, 
     
     PRIMARY KEY (`ma_tuyen`, `stt`)
-) ENGINE=MyISAM;;
+) ENGINE=MyISAM;
 
 /*TABLE 8*/
 CREATE TABLE `Ga_tram` (
-	`ma_ga_tram`			CHAR(7),		-- TODO: BT00001, TT00001
+	`ma_ga_tram`			CHAR(7),		-- BT00001, TT00001
     `dia_chi`				VARCHAR(30)		NOT NULL,
     `ten`					VARCHAR(30),
     `ga_tram`				BIT             NOT NULL,     -- 0: trạm xe bus, 1: ga tàu điện.
-    `ma_giao_lo_1`		    CHAR(6),
-    `ma_giao_lo_2`		    CHAR(6),
+    `ma_giao_lo_1`		    CHAR(6),		-- | FK to (`ma_giao_lo_1`, `ma_giao_lo_2`)
+    `ma_giao_lo_2`		    CHAR(6),		-- |		(`Doan_duong`)
     
     PRIMARY KEY (`ma_ga_tram`)
 );
 
 /*TABLE 9*/
 CREATE TABLE `Chuyen_tau_xe_ghe_ga_tram` (
-	`ma_tuyen`		CHAR(4),
-    `stt_tuyen`		INT UNSIGNED,
-    `ma_ga_tram`	CHAR(7),		-- TODO: BT00001, TT00001
+	`ma_tuyen`		CHAR(4),		-- | FK to (`ma_tuyen`, `stt`)
+    `stt_tuyen`		INT UNSIGNED,	-- |		(`Chuyen_tau_xe`)
+    `ma_ga_tram`	CHAR(7),		-- BT00001, TT00001
     `stt`			INT UNSIGNED,
-    `gio_ghe`		TIME,	-- TODO: format HH:MI
-    `gio_di`		TIME,	-- TODO: format HH:MI
+    `gio_ghe`		TIME,	-- format HH:MI
+    `gio_di`		TIME,	-- format HH:MI
     
     PRIMARY KEY (`ma_tuyen`, `stt_tuyen`, `ma_ga_tram`)
 );
 
 /*TABLE 10*/
 CREATE TABLE `Ve` (
-	`ma_ve`			CHAR(15),
-    `loai_ve`		SMALLINT,	-- TODO: 0 – vé lẻ, 1– vé tháng, 2 – vé một ngày.
+	`ma_ve`			CHAR(15),	-- V[O|M|D][DDMMYYYY][0-9][0-9][0-9][0-9][0-9]
+    `loai_ve`		SMALLINT,	-- 0 – vé lẻ, 1– vé tháng, 2 – vé một ngày.
     `gia_ve`		REAL,
-    `ngay_gio_mua`	DATETIME,	-- TODO: format DD-MM-YYYY HH:MI:SS.
-    `ma_hanh_khach`	CHAR(8),
+    `ngay_gio_mua`	DATETIME,	-- format DD-MM-YYYY HH:MI:SS.
+    `ma_hanh_khach`	CHAR(8),	-- FK to ma_hanh_khach (Hanh_khach)
     
     PRIMARY KEY (`ma_ve`)
 );
 
 /*TABLE 11*/
 CREATE TABLE `Ve_le` (
-	`ma_ve`				CHAR(15),
+	`ma_ve`				CHAR(15),	-- VO[DDMMYYYY][0-9][0-9][0-9][0-9][0-9]
     `ma_tuyen`			CHAR(4),
-    `ngay_su_dung`		DATE,		-- TODO: format DD-MM-YYYY
-    `ma_ga_tram_len`	CHAR(7),		-- TODO: BT00001, TT00001
-    `ma_ga_tram_xuong`	CHAR(7),		-- TODO: BT00001, TT00001
-    `gio_len`			TIME,	-- TODO: format HH:MI:SS
-    `gio_xuong`			TIME,	-- TODO: format HH:MI:SS
+    `ngay_su_dung`		DATE,		-- format DD-MM-YYYY
+    `ma_ga_tram_len`	CHAR(7),	-- FK to ma_ga_tram (Ga_tram)
+    `ma_ga_tram_xuong`	CHAR(7),	-- FK to ma_ga_tram (Ga_tram)
+    `gio_len`			TIME,	-- format HH:MI:SS
+    `gio_xuong`			TIME,	-- format HH:MI:SS
     
     PRIMARY KEY (`ma_ve`)
 );
 
 /*TABLE 12*/
 CREATE TABLE `Ve_thang` (
-	`ma_ve`				CHAR(15),
-    `ma_tuyen`			CHAR(4),
-	`ma_ga_tram_1`		CHAR(7),		-- TODO: BT00001, TT00001
-    `ma_ga_tram_2`		CHAR(7),		-- TODO: BT00001, TT00001
+	`ma_ve`				CHAR(15),	-- VM[DDMMYYYY][0-9][0-9][0-9][0-9][0-9]
+    `ma_tuyen`			CHAR(4),	-- FK to ma_tuyen (Chuyen_tau_xe)
+	`ma_ga_tram_1`		CHAR(7),	-- FK to ma_ga_tram (Ga_tram)
+    `ma_ga_tram_2`		CHAR(7),	-- FK to ma_ga_tram (Ga_tram)
     
     PRIMARY KEY (`ma_ve`)
 );
 
 /*TABLE 13*/
 CREATE TABLE `Hoat_dong_ve_thang` (
-	`ma_ve`				CHAR(15),
-    `ngay_su_dung`		DATE,			-- TODO: kiểu DATE có dạng DD-MM-YYYY
-    `gio_len`			TIME,			-- TODO: kiểu TIME có dạng HH:MI:SS. Giờ xuống phải trễ hơn giờ lên.
-    `gio_xuong`			TIME,			-- TODO: kiểu TIME có dạng HH:MI:SS. Giờ xuống phải trễ hơn giờ lên.
-    `ga_tram_len`		CHAR(7),		-- TODO: BT00001, TT00001
-    `ga_tram_xuong`		CHAR(7),		-- TODO: BT00001, TT00001
+	`ma_ve`				CHAR(15),	-- FK to ma_ve(Ve_thang)
+    `ngay_su_dung`		DATE,		-- format DD-MM-YYYY
+    `gio_len`			TIME,		-- format HH:MI:SS. gio_len < gio_xuong.
+    `gio_xuong`			TIME,		-- format HH:MI:SS. gio_len < gio_xuong
+    `ga_tram_len`		CHAR(7),	-- FK to ma_ga_tram (Ga_tram)
+    `ga_tram_xuong`		CHAR(7),	-- FK to ma_ga_tram (Ga_tram)
     
     PRIMARY KEY (`ma_ve`, `ngay_su_dung`, `gio_len`)
 );
 
 /*TABLE 14*/
 CREATE TABLE `Ve_1_ngay` (
-	`ma_ve`				CHAR(15),
-    `ngay_su_dung`		DATE, 			-- TODO: kiểu DATE có dạng DD-MM-YYYY
+	`ma_ve`				CHAR(15),	-- VD[DDMMYYYY][0-9][0-9][0-9][0-9][0-9]
+    `ngay_su_dung`		DATE, 		-- format DD-MM-YYYY
     
     PRIMARY KEY (`ma_ve`)
 );
 
 /*TABLE 15*/
 CREATE TABLE `Hoat_dong_cua_ve_1_ngay` (
-	`ma_ve`				CHAR(15) NOT NULL,
+	`ma_ve`				CHAR(15) NOT NULL,	-- FK to ma_ve(Ve_1_ngay)
     `stt`				INT NOT NULL AUTO_INCREMENT,
-    `ma_tuyen`			CHAR(4),
-    `ma_ga_tram_len`	CHAR(7),			-- TODO: BT00001, TT00001
-    `ma_ga_tram_xuong`	CHAR(7),			-- TODO: BT00001, TT00001
-    `gio_len`			TIME,				-- TODO: kiểu TIME có dạng HH:MI:SS. Giờ xuống phải trễ hơn giờ lên
-    `gio_xuong`			TIME,				-- TODO: kiểu TIME có dạng HH:MI:SS. Giờ xuống phải trễ hơn giờ lên
+    `ma_tuyen`			CHAR(4),	-- FK to ma_tuyen (Chuyen_tau_xe)
+    `ma_ga_tram_len`	CHAR(7),	-- FK to ma_ga_tram (Ga_tram)
+    `ma_ga_tram_xuong`	CHAR(7),	-- FK to ma_ga_tram (Ga_tram)
+    `gio_len`			TIME,		-- format HH:MI:SS. gio_len < gio_xuong
+    `gio_xuong`			TIME,		-- format HH:MI:SS. gio_len < gio_xuong
     
     PRIMARY KEY (`ma_ve`, `stt`)
 ) ENGINE=MyISAM;
 
 /*TABLE 16*/
 CREATE TABLE `Hanh_khach` (
-	`ma_hanh_khach`		CHAR(8),	-- TODO: KH[0-9][0-9][0-9] [0-9][0-9][0-9]. Ví dụ: KH000001 KH000002,…
+	`ma_hanh_khach`		CHAR(8),	-- KH[0-9][0-9][0-9] [0-9][0-9][0-9]
     `cccd`				CHAR(9)		UNIQUE,
     `dien_thoai`		CHAR(10)	UNIQUE,
     `nghe_nghiep`		VARCHAR(20),
@@ -169,16 +169,16 @@ CREATE TABLE `Hanh_khach` (
 
 /*TABLE 17*/
 CREATE TABLE `The_tu` (
-	`ma_the_tu`			CHAR(8),    -- TODO: TT[0-9][0-9][0-9][0-9][0-9][0-9].Ví dụ: TT000001,TT000002
-    `ngay_mua`			DATETIME,	-- TODO: DD-MM-YYYY HH:MI:SS
-    `ma_hanh_khach`		CHAR(8),
+	`ma_the_tu`			CHAR(8),    -- TT[0-9][0-9][0-9][0-9][0-9][0-9]
+    `ngay_mua`			DATETIME,	-- format DD-MM-YYYY HH:MI:SS
+    `ma_hanh_khach`		CHAR(8),	-- FK to ma_hanh_khach(Hanh_khach)
     
     PRIMARY KEY (`ma_the_tu`)
 );
 
 /*TABLE 18*/
 CREATE TABLE `Nhan_vien` (
-	`ma_nhan_vien`		    CHAR(6),		-- TODO: NV0001, NV0002,…
+	`ma_nhan_vien`		    CHAR(6),		-- NV0001, NV0002,…
     `loai_cong_viec`		VARCHAR(10),
     `ngay_sinh`			    DATE,
     `email`				    VARCHAR(20),
@@ -191,8 +191,8 @@ CREATE TABLE `Nhan_vien` (
 
 /*TABLE 19*/
 CREATE TABLE `Ga_tram_lam_viec` (
-	`ma_nhan_vien`		CHAR(6),		-- TODO: NV0001, NV0002,…
-    `ma_ga_tram`		CHAR(7),		-- TODO: BT00001, TT00001
+	`ma_nhan_vien`		CHAR(6),		-- FK to ma_nhan_vien(Nhan_vien)
+    `ma_ga_tram`		CHAR(7),		-- FK to ma_ga_tram(Ga_tram)
     
     PRIMARY KEY (`ma_nhan_vien`)
 );
@@ -379,7 +379,7 @@ FOR EACH ROW
 BEGIN
     -- TODO: CHECK VALID DATETIME
     IF (((SUBSTRING(NEW.`ma_ve`, 1, 2) != "VO") AND (SUBSTRING(NEW.`ma_ve`, 1, 2) != "VM") AND (SUBSTRING(NEW.`ma_ve`, 1, 2) != "VD")) OR
-		((SUBSTRING(NEW.`ma_ve`, 11, 1) < '0') OR (SUBSTRING(NEW.`ma_ve`, 11, 1) > '9')) OR
+        ((SUBSTRING(NEW.`ma_ve`, 11, 1) < '0') OR (SUBSTRING(NEW.`ma_ve`, 11, 1) > '9')) OR
 		((SUBSTRING(NEW.`ma_ve`, 12, 1) < '0') OR (SUBSTRING(NEW.`ma_ve`, 12, 1) > '9')) OR
         ((SUBSTRING(NEW.`ma_ve`, 13, 1) < '0') OR (SUBSTRING(NEW.`ma_ve`, 13, 1) > '9')) OR
         ((SUBSTRING(NEW.`ma_ve`, 14, 1) < '0') OR (SUBSTRING(NEW.`ma_ve`, 14, 1) > '9')) OR
@@ -407,10 +407,6 @@ BEGIN
 END;
 $$
 DELIMITER ;
-/*
-*   2.1.2
-*/
-
 
 /*TABLE 12*/
 DELIMITER $$
@@ -519,8 +515,8 @@ BEGIN
     DECLARE `tram_2` CHAR(7);
     SET `tram_1` = (SELECT `ma_ga_tram_1` FROM `Ve_thang` `V` WHERE `V`.`ma_ve` = New.`ma_ve`);
     SET `tram_2` = (SELECT `ma_ga_tram_2` FROM `Ve_thang` `V` WHERE `V`.`ma_ve` = New.`ma_ve`);
-	IF ((`tram_1` = New.`ga_tram_len` AND `tram_2` = New.`ga_tram_xuong`) OR
-		 (`tram_2` = New.`ga_tram_len` AND `tram_1` = New.`ga_tram_xuong`)) != 1 THEN
+	IF (((`tram_1` = New.`ga_tram_len` AND `tram_2` = New.`ga_tram_xuong`) OR
+		 (`tram_2` = New.`ga_tram_len` AND `tram_1` = New.`ga_tram_xuong`)) != TRUE) THEN
 		SIGNAL SQLSTATE '45000';
     END IF;
 END;
@@ -696,157 +692,141 @@ DELIMITER ;
 ***		INSERT DATA
 **/
 
+
+
+/*TABLE 1*/
+INSERT INTO `Giao_lo`(`longitute`,`latitude`) VALUES
+(0,0),(2,2),(2,0),(3,3),(3,5),(4,2),(4,5),(5,5);
+
+/*TABLE 3*/
+INSERT INTO `Con_duong`(`ten_duong`) VALUES
+('Duong doi'),('Duong vao tim em'),('Duong di hoc'),('Duong ve nha');
+
+/*TABLE 2*/
+INSERT INTO `Doan_duong` VALUES
+('GL1','GL2','CD1',10,1),('GL2','GL4','CD1',10,2),
+('GL1','GL8','CD2',1000,1),('GL1','GL3','CD3',100,1),
+('GL3','GL5','CD3',100,2),('GL5','GL7','CD3',100,3),
+('GL7','GL2','CD4',5,1),('GL2','GL1','CD4',5,2);
+
+/*TABLE 4*/
+INSERT INTO `Tuyen_tau_xe` VALUES
+('B001'),('B002'),('B003'),('B004'),
+('T001'),('T002'),('T003'),('T004');
+
+/*TABLE 5*/
+INSERT INTO `Tuyen_xe_bus`(`ma_tuyen_tau_xe`) VALUES
+('B001'),('B002'),('B003'),('B004');
+
+/*TABLE 6*/
+INSERT INTO `Tuyen_tau_dien` VALUES
+('A','Tau A',10000,'T001'),('B','Tau B',15000,'T002'), 
+('C','Tau C',20000,'T003'),('D','Tau D',25000,'T004');
+
+/*TABLE 7*/
+INSERT INTO `Chuyen_tau_xe` VALUES
+('B001',1),('B001',2),('B002',1),('B002',2), 
+('B003',1),('B003',2),('B004',1),('B004',2),                            
+('T001',1),('T001',2),('T002',1),('T002',2), 
+('T003',1),('T003',2),('T004',1),('T004',2);
+
+/*TABLE 8*/
+INSERT INTO `Ga_tram` VALUES
+('BT00001','Dia chi 1','Tram BT 1',0,'GL1','GL2'),
+('BT00002','Dia chi 2','Tram BT 2',0,'GL2','GL4'),
+('TT00001','Dia chi 3','Tram TT 1',1,'GL1','GL3'), 
+('TT00002','Dia chi 4','Tram TT 2',1,'GL3','GL5');
+
+/*TABLE 9*/
+INSERT INTO `Chuyen_tau_xe_ghe_ga_tram` VALUES
+('B001', 1, 'BT00001', 1, '10:10:00', '10:20:00'),
+('B001', 1, 'BT00002', 2, '10:30:00', '10:40:00'),
+('T001', 1, 'TT00001', 1, '10:10:00', '10:20:00'),
+('T001', 1, 'TT00002', 2, '10:30:00', '10:40:00');
+
+/*TABLE 16*/
+INSERT INTO `Hanh_khach` VALUES
+('KH000001','111111111','1231231231','teacher','F','teacher1@gmail.com','1990-01-01'),
+('KH000002','222222222','0123123123','hihi','M','hihi2@gmail.com','1992-02-02'),
+('KH000003','333333333','0123112123','hiihi','F','hiihi2@gmail.com','1992-02-02'),
+('KH000004','444444444','0122123123','hiiihi','M','hiiiihi2@gmail.com','1992-02-02');
+
+/*TABLE 10*/
+INSERT INTO `Ve` VALUES
+('VO1805202100001',0,0,'2021-05-18 10:00:00','KH000001'),
+('VO1805202100002',0,0,'2021-05-18 10:00:00','KH000002'),
+('VO2005202100001',0,0,'2021-05-20 10:00:00','KH000003'),
+('VO2005202100002',0,0,'2021-05-20 10:00:00','KH000004'),
+
+('VM1805202100001',1,0,'2021-05-18 10:00:00','KH000001'),
+('VM1805202100002',1,0,'2021-05-18 10:00:00','KH000002'),
+('VM2005202100001',1,0,'2021-05-20 10:00:00','KH000003'),
+('VM2005202100002',1,0,'2021-05-20 10:00:00','KH000004'),
+
+('VD1805202100001',2,0,'2021-05-18 10:00:00','KH000001'),
+('VD1805202100002',2,0,'2021-05-18 10:00:00','KH000002'),
+('VD2005202100001',2,0,'2021-05-20 10:00:00','KH000003'),
+('VD2005202100002',2,0,'2021-05-20 10:00:00','KH000004');
+
+/*TABLE 11*/
+INSERT INTO `Ve_le` VALUES
+('VO1805202100001','B001','2021-05-18','BT00001','BT00002','10:10:00','10:30:00'),
+('VO1805202100002','T001','2021-05-18','TT00001','TT00002','10:10:00','10:30:00'),
+('VO2005202100001','B001','2021-05-20','BT00001','BT00002','10:10:00','10:30:00'),
+('VO2005202100002','T001','2021-05-20','TT00001','TT00002','10:10:00','10:30:00');
+                
+/*TABLE 12*/
+INSERT INTO `Ve_thang` VALUES
+('VM1805202100001','B001','BT00001','BT00002'),
+('VM1805202100002','T001','TT00001','TT00002'),
+('VM2005202100001','B001','BT00001','BT00002'),
+('VM2005202100002','T001','TT00001','TT00002');
+
+/*TABLE 13*/
+INSERT INTO `Hoat_dong_ve_thang` VALUES
+('VM1805202100001','2021-05-18','10:10:00','10:30:00','BT00001','BT00002'),
+('VM1805202100002','2021-05-18','10:10:00','10:30:00','TT00001','TT00002'),
+('VM2005202100001','2021-05-20','10:10:00','10:30:00','BT00002','BT00001'),
+('VM2005202100002','2021-05-20','10:10:00','10:30:00','TT00002','TT00001');
+
+/*TABLE 14*/
+INSERT INTO `Ve_1_ngay` VALUES
+('VD1805202100001','2021-05-18'),('VD1805202100002','2021-05-18'),
+('VD2005202100001','2021-05-20'),('VD2005202100002','2021-05-20');
+
+/*TABLE 15*/
+INSERT INTO `Hoat_dong_cua_ve_1_ngay`(`ma_ve`,`ma_tuyen`,`ma_ga_tram_len`,`ma_ga_tram_xuong`,`gio_len`,`gio_xuong`) VALUES
+('VD1805202100001','B001','BT00001','BT00002','10:10:00','10:30:00'),
+('VD1805202100001','B001','BT00002','BT00001','10:30:00','10:50:00'),
+('VD1805202100002','T001','TT00001','TT00002','10:10:00','10:30:00'),
+('VD1805202100002','T001','TT00002','TT00001','10:30:00','10:50:00'),
+
+('VD2005202100001','B001','BT00001','BT00002','10:10:00','10:30:00'),
+('VD2005202100001','B001','BT00002','BT00001','10:30:00','10:50:00'),
+('VD2005202100002','T001','TT00001','TT00002','10:10:00','10:30:00'),
+('VD2005202100002','T001','TT00002','TT00001','10:30:00','10:50:00');
+
+/*TABLE 18*/
+INSERT INTO `Nhan_vien` VALUES
+('NV0001','Giam sat','1993-03-03','nv1@gmail.com','F','0123412341','0123412342'),
+('NV0002','Giam sat','1993-04-04','nv2@gmail.com','M','0123412343','0223412344'),
+('NV0003','Giam sat','1993-04-04','nv2@gmail.com','F','0123112343','0123412344'),
+('NV0004','Giam sat','1993-04-04','nv2@gmail.com','M','0123412243','0133412344');
+
+/*TABLE 17*/
+INSERT INTO `The_tu` VALUES
+('TT000001','2021-05-18','KH000001'),('TT000002','2021-05-18','KH000002'),
+('TT000003','2021-05-20','KH000002'),('TT000004','2021-05-20','KH000002');
+
+/*TABLE 19*/
+INSERT INTO `Ga_tram_lam_viec` VALUES
+('NV0001','BT00001'),('NV0002','TT00001'),
+('NV0003','BT00002'),('NV0004','TT00002');
+
 /*TABLE 20*/
 INSERT INTO `Bang_gia` (`don_gia_xe_bus`,`gia_ve_1_ngay_trong_tuan`,`gia_ve_1_ngay_cuoi_tuan`)
     VALUES (5000,30000,40000) ON DUPLICATE KEY 
-    UPDATE `don_gia_xe_bus`=5000,`gia_ve_1_ngay_trong_tuan`=30000,`gia_ve_1_ngay_cuoi_tuan`=40000;
-
-/*TABLE 1*/
-INSERT INTO `Giao_lo` (`longitute`, `latitude`) VALUES (0,0),(2,2),(2,0),(3,3),(3,5),(4,2),(4,5),(5,5);
-
-/*TABLE 3*/
-INSERT INTO `Con_duong` (`ten_duong`) VALUES ('Duong doi'), ('Duong vao tim em'), ('Duong di hoc'), ('Duong ve nha');
-
-/*TABLE 2*/
-INSERT INTO `Doan_duong` 
-VALUES  ('GL1', 'GL2', 'CD1', 10, 1), 
-        ('GL2', 'GL4', 'CD1', 10, 2);
-
-INSERT INTO `Doan_duong` 
-VALUES ('GL1', 'GL8', 'CD2', 1000, 1);
-
-INSERT INTO `Doan_duong` 
-VALUES  ('GL1', 'GL3', 'CD3', 100, 1), 
-        ('GL3', 'GL5', 'CD3', 100, 2), 
-        ('GL5', 'GL7', 'CD3', 100, 3);
-
-INSERT INTO `Doan_duong` 
-VALUES  ('GL7', 'GL2', 'CD4', 5, 1), 
-        ('GL2', 'GL1', 'CD4', 5, 2);
-
-/*TABLE 4*/
-INSERT INTO `Tuyen_tau_xe` VALUES ('B001'),('B002'),('B003'),('B004'),('T001'),('T002'),('T003'),('T004');
-
-/*TABLE 5*/
-INSERT INTO `Tuyen_xe_bus` (`ma_tuyen_tau_xe`) VALUES ('B001'),('B002'),('B003'),('B004');
-
-/*TABLE 6*/
-INSERT INTO `Tuyen_tau_dien` 
-VALUES  ('A', 'Tau A', 10000, 'T001'), 
-        ('B', 'Tau B', 15000, 'T002'), 
-        ('C', 'Tau C', 20000, 'T003'),
-        ('D', 'Tau D', 25000, 'T004');
-
-/*TABLE 7*/
-INSERT INTO `Chuyen_tau_xe` 
-VALUES  ('B001', 1), ('B001', 2), 
-        ('B002', 1), ('B002', 2), 
-        ('B003', 1), ('B003', 2),                            
-        ('B004', 1), ('B004', 2),                            
-        ('T001', 1), ('T001', 2), 
-        ('T002', 1), ('T002', 2), 
-        ('T003', 1), ('T003', 2),
-        ('T004', 1), ('T004', 2);
-
-/*TABLE 8*/
-INSERT INTO `Ga_tram` 
-VALUES  ('BT00001', 'Dia chi 1', 'Tram BT 1', 0, 'GL1', 'GL2'), 
-        ('BT00002', 'Dia chi 2', 'Tram BT 2', 0, 'GL2', 'GL4'),
-        ('TT00001', 'Dia chi 3', 'Tram TT 1', 1, 'GL1', 'GL3'), 
-        ('TT00002', 'Dia chi 4', 'Tram TT 2', 1, 'GL3', 'GL5');
-
-/*TABLE 9*/
-INSERT INTO `Chuyen_tau_xe_ghe_ga_tram` 
-VALUES  ('B001', 1, 'BT00001', 1, '10:10:00', '10:20:00'),
-        ('B001', 1, 'BT00002', 2, '10:30:00', '10:40:00'),
-        ('T001', 1, 'TT00001', 1, '10:10:00', '10:20:00'),
-        ('T001', 1, 'TT00002', 2, '10:30:00', '10:40:00');
-
-/*TABLE 16*/
-INSERT INTO `Hanh_khach` 
-VALUES  ('KH000001', '111111111', '1231231231', 'teacher', 'F', 'teacher1@gmail.com', '1990-01-01'),
-        ('KH000002', '222222222', '0123123123', 'hihi', 'M', 'hihi2@gmail.com', '1992-02-02'),
-        ('KH000003', '333333333', '0123112123', 'hiihi', 'F', 'hiihi2@gmail.com', '1992-02-02'),
-        ('KH000004', '444444444', '0122123123', 'hiiihi', 'M', 'hiiiihi2@gmail.com', '1992-02-02');
-
-/*TABLE 10*/
-INSERT INTO `Ve` 
-VALUES  ('VO1805202100001', 0, 0, '2021-05-18 10:00:00', 'KH000001'),
-        ('VO1805202100002', 0, 0, '2021-05-18 10:00:00', 'KH000002'),
-        ('VO2005202100001', 0, 0, '2021-05-20 10:00:00', 'KH000003'),
-        ('VO2005202100002', 0, 0, '2021-05-20 10:00:00', 'KH000004'),
-
-        ('VM1805202100001', 1, 0, '2021-05-18 10:00:00', 'KH000001'),
-        ('VM1805202100002', 1, 0, '2021-05-18 10:00:00', 'KH000002'),
-        ('VM2005202100001', 1, 0, '2021-05-20 10:00:00', 'KH000003'),
-        ('VM2005202100002', 1, 0, '2021-05-20 10:00:00', 'KH000004'),
-
-        ('VD1805202100001', 2, 0, '2021-05-18 10:00:00', 'KH000001'),
-        ('VD1805202100002', 2, 0, '2021-05-18 10:00:00', 'KH000002'),
-        ('VD2005202100001', 2, 0, '2021-05-20 10:00:00', 'KH000003'),
-        ('VD2005202100002', 2, 0, '2021-05-20 10:00:00', 'KH000004');
-
-/*TABLE 11*/
-INSERT INTO `Ve_le` 
-VALUES  ('VO1805202100001', 'B001', '2021-05-18', 'BT00001', 'BT00002', '10:10:00', '10:30:00'),
-        ('VO1805202100002', 'T001', '2021-05-18', 'TT00001', 'TT00002', '10:10:00', '10:30:00'),
-        ('VO2005202100001', 'B001', '2021-05-20', 'BT00001', 'BT00002', '10:10:00', '10:30:00'),
-        ('VO2005202100002', 'T001', '2021-05-20', 'TT00001', 'TT00002', '10:10:00', '10:30:00');
-                
-/*TABLE 12*/
-INSERT INTO `Ve_thang` 
-VALUES  ('VM1805202100001', 'B001', 'BT00001', 'BT00002'),
-        ('VM1805202100002', 'T001', 'TT00001', 'TT00002'),
-        ('VM2005202100001', 'B001', 'BT00001', 'BT00002'),
-        ('VM2005202100002', 'T001', 'TT00001', 'TT00002');
-
-/*TABLE 13*/
-INSERT INTO `Hoat_dong_ve_thang` 
-VALUES  ('VM1805202100001', '2021-05-18', '10:10:00', '10:30:00', 'BT00001', 'BT00002'),
-        ('VM1805202100002', '2021-05-18', '10:10:00', '10:30:00', 'TT00001', 'TT00002'),
-        ('VM2005202100001', '2021-05-20', '10:10:00', '10:30:00', 'BT00002', 'BT00001'),
-        ('VM2005202100002', '2021-05-20', '10:10:00', '10:30:00', 'TT00002', 'TT00001');
-
-/*TABLE 14*/
-INSERT INTO `Ve_1_ngay` 
-VALUES  ('VD1805202100001', '2021-05-18'),
-        ('VD1805202100002', '2021-05-18'),
-        ('VD2005202100001', '2021-05-20'),
-        ('VD2005202100002', '2021-05-20');
-
-/*TABLE 15*/
-INSERT INTO `Hoat_dong_cua_ve_1_ngay` (`ma_ve`, `ma_tuyen`, `ma_ga_tram_len`, `ma_ga_tram_xuong`, `gio_len`, `gio_xuong`) 
-VALUES  ('VD1805202100001', 'B001', 'BT00001', 'BT00002', '10:10:00', '10:30:00'),
-        ('VD1805202100001', 'B001', 'BT00002', 'BT00001', '10:30:00', '10:50:00'),
-        ('VD1805202100002', 'T001', 'TT00001', 'TT00002', '10:10:00', '10:30:00'),
-        ('VD1805202100002', 'T001', 'TT00002', 'TT00001', '10:30:00', '10:50:00'),
-
-        ('VD2005202100001', 'B001', 'BT00001', 'BT00002', '10:10:00', '10:30:00'),
-        ('VD2005202100001', 'B001', 'BT00002', 'BT00001', '10:30:00', '10:50:00'),
-        ('VD2005202100002', 'T001', 'TT00001', 'TT00002', '10:10:00', '10:30:00'),
-        ('VD2005202100002', 'T001', 'TT00002', 'TT00001', '10:30:00', '10:50:00');
-
-/*TABLE 18*/
-INSERT INTO `Nhan_vien` 
-VALUES  ('NV0001', 'Giam sat', '1993-03-03', 'nv1@gmail.com', 'F', '0123412341', '0123412342'),
-        ('NV0002', 'Giam sat', '1993-04-04', 'nv2@gmail.com', 'M', '0123412343', '0223412344'),
-        ('NV0003', 'Giam sat', '1993-04-04', 'nv2@gmail.com', 'F', '0123112343', '0123412344'),
-        ('NV0004', 'Giam sat', '1993-04-04', 'nv2@gmail.com', 'M', '0123412243', '0133412344');
-
-/*TABLE 17*/
-INSERT INTO `The_tu` 
-VALUES  ('TT000001', '2021-05-18', 'KH000001'),
-        ('TT000002', '2021-05-18', 'KH000002'),
-        ('TT000003', '2021-05-20', 'KH000002'),
-        ('TT000004', '2021-05-20', 'KH000002');
-
-/*TABLE 19*/
-INSERT INTO `Ga_tram_lam_viec` 
-VALUES  ('NV0001', 'BT00001'),
-        ('NV0002', 'TT00001'),
-        ('NV0003', 'BT00002'),
-        ('NV0004', 'TT00002');
-
-
-
+    UPDATE 	`don_gia_xe_bus` = 5000,
+			`gia_ve_1_ngay_trong_tuan` = 30000,
+			`gia_ve_1_ngay_cuoi_tuan` = 40000;
 
