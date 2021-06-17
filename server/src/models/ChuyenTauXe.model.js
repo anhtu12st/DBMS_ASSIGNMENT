@@ -1,6 +1,7 @@
 const createModel = require("../utils/model_helper");
 const knex = require("../knex/knex");
 const ChuyenTauXeGheGaTramModel = require('./ChuyenTauXeGheGaTram.model');
+const TuyenTauXeModel = require('./TuyenTauXe.model');
 
 const MODEL_NAME = "ChuyenTauXe";
 const TABLE_NAME = "Chuyen_tau_xe";
@@ -25,6 +26,9 @@ const ChuyenTauXe = (knex) => {
   }) => {
     let data = null;
     try {
+      try {
+        await TuyenTauXeModel.create({ ma_tuyen });
+      } catch (error) {}
       data = await model.create({ ma_tuyen, stt });
     } catch (error) {
     } finally {
