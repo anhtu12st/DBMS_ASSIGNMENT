@@ -58,10 +58,10 @@ CREATE TABLE `Tuyen_tau_dien` (
 /*TABLE 7*/
 CREATE TABLE `Chuyen_tau_xe` (
     `ma_tuyen` CHAR(4), -- FK to ma_tuyen (Tuyen_tau_xe)
-    `stt`  INT UNSIGNED AUTO_INCREMENT, 
+    `stt`  INT UNSIGNED, 
     
     PRIMARY KEY (`ma_tuyen`, `stt`)
-) ENGINE=MyISAM;
+);
 
 /*TABLE 8*/
 CREATE TABLE `Ga_tram` (
@@ -693,6 +693,12 @@ DELIMITER ;
 **/
 
 
+/*TABLE 20*/
+INSERT INTO `Bang_gia` (`don_gia_xe_bus`,`gia_ve_1_ngay_trong_tuan`,`gia_ve_1_ngay_cuoi_tuan`)
+    VALUES (5000,30000,40000) ON DUPLICATE KEY 
+    UPDATE 	`don_gia_xe_bus` = 5000,
+			`gia_ve_1_ngay_trong_tuan` = 30000,
+			`gia_ve_1_ngay_cuoi_tuan` = 40000;
 
 /*TABLE 1*/
 INSERT INTO `Giao_lo`(`longitute`,`latitude`) VALUES
@@ -823,10 +829,4 @@ INSERT INTO `Ga_tram_lam_viec` VALUES
 ('NV0001','BT00001'),('NV0002','TT00001'),
 ('NV0003','BT00002'),('NV0004','TT00002');
 
-/*TABLE 20*/
-INSERT INTO `Bang_gia` (`don_gia_xe_bus`,`gia_ve_1_ngay_trong_tuan`,`gia_ve_1_ngay_cuoi_tuan`)
-    VALUES (5000,30000,40000) ON DUPLICATE KEY 
-    UPDATE 	`don_gia_xe_bus` = 5000,
-			`gia_ve_1_ngay_trong_tuan` = 30000,
-			`gia_ve_1_ngay_cuoi_tuan` = 40000;
 

@@ -23,15 +23,20 @@ const ChuyenTauXe = (knex) => {
     gio_ghe,
     gio_di,
   }) => {
-    const data = await model.create({ ma_tuyen, stt });
-    await ChuyenTauXeGheGaTramModel.create({
-      ma_tuyen,
-      stt_tuyen: stt,
-      ma_ga_tram,
-      stt: stt_ga_tram,
-      gio_ghe,
-      gio_di,
-    });
+    let data = null;
+    try {
+      data = await model.create({ ma_tuyen, stt });
+    } catch (error) {
+    } finally {
+      await ChuyenTauXeGheGaTramModel.create({
+        ma_tuyen,
+        stt_tuyen: stt,
+        ma_ga_tram,
+        stt: stt_ga_tram,
+        gio_ghe,
+        gio_di,
+      });
+    }
     return data;
   };
 
