@@ -233,7 +233,7 @@ ADD CONSTRAINT `fk_gatram_mgl_doanduong_mgl` FOREIGN KEY (`ma_giao_lo_1`, `ma_gi
 
 /*TABLE 9*/
 ALTER TABLE `Chuyen_tau_xe_ghe_ga_tram`
-ADD CONSTRAINT `fk_ghegatram_mtstt_chuyentauxe_mtstt` FOREIGN KEY (`ma_tuyen`, `stt`) REFERENCES `Chuyen_tau_xe`(`ma_tuyen`, `stt`),
+ADD CONSTRAINT `fk_ghegatram_mtstt_chuyentauxe_mtstt` FOREIGN KEY (`ma_tuyen`, `stt_tuyen`) REFERENCES `Chuyen_tau_xe`(`ma_tuyen`, `stt`),
 ADD CONSTRAINT `fk_ghegatram_mgt_gatram_mgt` FOREIGN KEY (`ma_ga_tram`) REFERENCES `Ga_tram`(`ma_ga_tram`);
 
 /*TABLE 10*/
