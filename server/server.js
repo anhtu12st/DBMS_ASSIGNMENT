@@ -1,10 +1,11 @@
 const express = require("express");
-
+const cors = require('cors')
 const routes = require("./src/routes");
+
 
 // create express app
 const app = express();
-
+app.use(cors());
 // Setup server port
 const port = process.env.PORT || 5000;
 
