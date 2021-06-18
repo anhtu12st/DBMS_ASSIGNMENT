@@ -740,8 +740,12 @@ INSERT INTO `Chuyen_tau_xe` VALUES
 INSERT INTO `Ga_tram` VALUES
 ('BT00001','Dia chi 1','Tram BT 1',0,'GL1','GL2'),
 ('BT00002','Dia chi 2','Tram BT 2',0,'GL2','GL4'),
+('BT00003','Dia chi 3','Tram BT 3',0,'GL1','GL2'),
+('BT00004','Dia chi 4','Tram BT 4',0,'GL2','GL4'),
 ('TT00001','Dia chi 3','Tram TT 1',1,'GL1','GL3'), 
-('TT00002','Dia chi 4','Tram TT 2',1,'GL3','GL5');
+('TT00002','Dia chi 4','Tram TT 2',1,'GL3','GL5'),
+('TT00003','Dia chi 3','Tram BT 3',1,'GL1','GL2'),
+('TT00004','Dia chi 4','Tram BT 4',1,'GL2','GL4');
 
 /*TABLE 9*/
 INSERT INTO `Chuyen_tau_xe_ghe_ga_tram` VALUES
